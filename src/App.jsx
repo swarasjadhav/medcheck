@@ -14,6 +14,26 @@ const EVIDENCE_LEVELS = {
   contradicts: { label: "Contradicts claim", value: 1, color: "#C4571F" },
 };
 
+// App icon: a magnifying glass with a check mark inside (check the evidence),
+// plus a small medical plus. Same artwork as public/icon.svg.
+function Logo({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 512 512" aria-label="MedCheck logo" role="img">
+      <defs>
+        <linearGradient id="mc-bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#2D7D6E" />
+          <stop offset="1" stopColor="#1F5E52" />
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="112" fill="url(#mc-bg)" />
+      <circle cx="232" cy="236" r="108" fill="none" stroke="#FAF8F4" strokeWidth="36" />
+      <line x1="312" y1="316" x2="404" y2="408" stroke="#FAF8F4" strokeWidth="42" strokeLinecap="round" />
+      <path d="M184 238 L222 276 L286 198" fill="none" stroke="#FAF8F4" strokeWidth="34" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M396 84 V148 M364 116 H428" fill="none" stroke="#8FC9BC" strokeWidth="24" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function EvidenceMeter({ level, size = "md" }) {
   const info = EVIDENCE_LEVELS[level];
   const bars = 4;
@@ -306,13 +326,46 @@ function FactCheckScreen({ onOpenTopic }) {
           <div
             style={{
               textAlign: "center",
-              padding: "40px 20px",
+              padding: "32px 20px",
               fontFamily: "Inter, sans-serif",
-              color: "#8B8378",
+              color: "#5C574F",
               fontSize: 14,
+              lineHeight: 1.6,
+              background: "#fff",
+              border: "1px solid #E4DFD6",
+              borderRadius: 12,
             }}
           >
-            No matching claims yet. Try different words.
+            <div
+              style={{
+                fontFamily: "'Source Serif 4', Georgia, serif",
+                fontSize: 17,
+                fontWeight: 600,
+                color: "#1A2E35",
+                marginBottom: 8,
+              }}
+            >
+              We haven't reviewed this claim yet
+            </div>
+            That doesn't mean it's true or false. We only rate claims we've checked
+            against real sources.
+            <div style={{ marginTop: 14 }}>
+              <a
+                href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(query.trim())}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "#2D7D6E",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Search PubMed for it <ExternalLink size={14} />
+              </a>
+            </div>
           </div>
         )}
         {results.map((t) => {
@@ -493,6 +546,60 @@ function SourceScreen({ topic, onBack }) {
           {topic.explanation}
         </p>
 
+        {(topic.limitations || topic.wouldChange) && (
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #E4DFD6",
+              borderRadius: 12,
+              padding: "14px 16px",
+              margin: "0 0 26px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+            }}
+          >
+            {topic.limitations && (
+              <div>
+                <div
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                    color: info.color,
+                    marginBottom: 5,
+                  }}
+                >
+                  LIMITATIONS
+                </div>
+                <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, lineHeight: 1.55, color: "#33302A" }}>
+                  {topic.limitations}
+                </div>
+              </div>
+            )}
+            {topic.wouldChange && (
+              <div>
+                <div
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                    color: info.color,
+                    marginBottom: 5,
+                  }}
+                >
+                  WHAT WOULD CHANGE THIS CONCLUSION
+                </div>
+                <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, lineHeight: 1.55, color: "#33302A" }}>
+                  {topic.wouldChange}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div
           style={{
             fontFamily: "Inter, sans-serif",
@@ -549,6 +656,18 @@ function SourceScreen({ topic, onBack }) {
             <ExternalLink size={15} color="#8B8378" style={{ flexShrink: 0, marginTop: 2 }} />
           </a>
         ))}
+        <p
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontSize: 11.5,
+            lineHeight: 1.5,
+            color: "#8B8378",
+            margin: "18px 0 0",
+          }}
+        >
+          For education only. MedCheck is not medical advice. Talk to a doctor or
+          pharmacist about your own health.
+        </p>
       </div>
     </div>
   );
@@ -561,8 +680,10 @@ function SourceScreen({ topic, onBack }) {
 export default function App() {
   const [tab, setTab] = useState("feed");
   const [activeTopic, setActiveTopic] = useState(null);
+  const [returnTab, setReturnTab] = useState("feed");
 
   const openTopic = (topic) => {
+    setReturnTab(tab); // so Back returns to where you came from
     setActiveTopic(topic);
     setTab("sources");
   };
@@ -595,15 +716,18 @@ export default function App() {
           flexShrink: 0,
         }}
       >
-        <span
-          style={{
-            fontFamily: "'Source Serif 4', Georgia, serif",
-            fontWeight: 700,
-            fontSize: 16,
-            color: tab === "feed" ? "#FAF8F4" : "#1A2E35",
-          }}
-        >
-          MedCheck
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Logo size={24} />
+          <span
+            style={{
+              fontFamily: "'Source Serif 4', Georgia, serif",
+              fontWeight: 700,
+              fontSize: 16,
+              color: tab === "feed" ? "#FAF8F4" : "#1A2E35",
+            }}
+          >
+            MedCheck
+          </span>
         </span>
         <span
           style={{
@@ -619,7 +743,7 @@ export default function App() {
       {tab === "check" && <FactCheckScreen onOpenTopic={openTopic} />}
       {tab === "quiz" && <QuizScreen onOpenTopic={openTopic} topics={TOPICS} />}
       {tab === "sources" && (
-        <SourceScreen topic={activeTopic} onBack={() => setTab("check")} />
+        <SourceScreen topic={activeTopic} onBack={() => setTab(returnTab)} />
       )}
 
       <TabBar active={tab} onChange={setTab} />

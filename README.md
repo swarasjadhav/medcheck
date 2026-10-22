@@ -6,7 +6,7 @@ A short-form, swipe-through app for teens and adults who see health claims on so
 
 Built for the 2026 Congressional App Challenge, Texas's 21st District.
 
-- **Team:** Swara Jadhav, Revanth [last name], Sragvi [last name] ([school])
+- **Team:** Swara Jadhav, Revanth Movva, Sragvi Madishetty (Ronald Reagan High School)
 - **Demo video:** [paste your YouTube link here]
 - **Live app (optional):** [paste your Vercel link here, or delete this line]
 

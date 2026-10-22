@@ -89,12 +89,13 @@ The Feed, Fact Check, and Quiz all read from this one file, so adding a topic me
 
 ## How we use AI (full disclosure)
 
-**What our team did:** we chose the topic and the features, wrote the explanation for every topic, chose the sources, ran and tested the app, and made the demo video.
+**What our team did:** we chose the topic and the features, chose the 20 claims and their sources, checked the explanations and ratings against those sources, ran and tested the app, and made the demo video.
 
-**What Claude (an AI assistant from Anthropic) helped with:**
+**What AI (Claude, an AI assistant from Anthropic) helped with:**
 
-- Planning the app and writing much of the code, such as the React components, styling, and bug fixes. We run it, test it, and can explain how it works.
-- Drafting the short "Limitations" and "What would change this conclusion" notes on each topic, based on our explanations and sources. We check each note against its source.
+- Turning the studies into plain-language explanations. Our team did not write every explanation by hand; AI helped draft them from the sources, and we check each one against its source. Every explanation links to the study it comes from.
+- Drafting the short "Limitations" and "What would change this conclusion" notes on each topic. We check each note against its source.
+- Planning the app, such as the React components, styling, and bug fixes. We run it, test it, and can explain how it works.
 - Making the app icon artwork.
 - Building a verification script that uses the PubMed API and Claude to ask whether a source supports an explanation. We built it but have **not** run it on our final topics, so all of our checking was done by hand.
 - Helping prepare our demo slides, video script, screen-recording edit, and this README.
@@ -110,5 +111,3 @@ For education only. MedCheck is not medical advice. Talk to a doctor or pharmaci
 - Short video explainers for each topic
 - Flags that tell us when new research appears on a topic we have already reviewed
 - More topics, chosen by the people who use the app
-
-<!-- If you add the verifier folder to this repo, add a line under "How the code is organized" describing it. -->

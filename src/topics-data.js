@@ -1,11 +1,9 @@
-
-Topics data · JS
 /**
  * topics-data.js — FINAL 20 curated topics
  * Same content as the planning version, just using `export` instead of
  * `module.exports` since Vite/React projects use ES modules.
  */
- 
+
 export const TOPICS = [
   // ---------- STRONG (2) ----------
   {
@@ -34,7 +32,7 @@ export const TOPICS = [
       { title: "Outdoor time and myopia incidence in children", publisher: "JAMA", year: 2015, url: "https://jamanetwork.com/journals/jama/article-abstract/2441261" },
     ],
   },
- 
+
   // ---------- LIMITED (4) ----------
   {
     id: "vitamin-c-colds",
@@ -59,7 +57,7 @@ export const TOPICS = [
     limitations: "The findings apply to healthy adults without a deficiency, and the possible small cancer effect has real limitations.",
     wouldChange: "Better trials showing a clear benefit for heart disease, cancer, or death in healthy adults.",
     sources: [
-      { title: "Vitamin and mineral supplements for primary prevention of CVD and cancer", publisher: "USPSTF / Annals of Internal Medicine", year: 2022, url: "https://www.uspreventiveservicestaskforce.org/" },
+      { title: "Vitamin, Mineral, and Multivitamin Supplementation to Prevent Cardiovascular Disease and Cancer", publisher: "USPSTF / JAMA", year: 2022, url: "https://www.uspreventiveservicestaskforce.org/uspstf/document/RecommendationStatementFinal/vitamin-supplementation-to-prevent-cvd-and-cancer-preventive-medication" },
     ],
   },
   {
@@ -88,7 +86,7 @@ export const TOPICS = [
       { title: "Energy drink consumption and health outcomes in adolescents", publisher: "Public Health", year: 2024, url: "https://doi.org/10.1016/j.puhe.2023.08.024" },
     ],
   },
- 
+
   // ---------- UNCLEAR (6) ----------
   {
     id: "water-8-glasses",
@@ -100,7 +98,7 @@ export const TOPICS = [
     limitations: "Actual needs vary with body size, activity, climate, and diet, so no single number fits everyone.",
     wouldChange: "A strong clinical trial showing a specific daily amount that benefits most people.",
     sources: [
-      { title: "Dietary Reference Intakes for Water", publisher: "National Academies of Sciences, Engineering, and Medicine", year: 2005, url: "https://www.nationalacademies.org/" },
+      { title: "Dietary Reference Intakes for Water, Potassium, Sodium, Chloride, and Sulfate", publisher: "National Academies of Sciences, Engineering, and Medicine", year: 2005, url: "https://nap.nationalacademies.org/10925" },
     ],
   },
   {
@@ -113,7 +111,7 @@ export const TOPICS = [
     limitations: "Longer studies are still needed, and the short-term edge for alternate-day fasting was modest.",
     wouldChange: "Longer trials showing intermittent fasting clearly beats standard calorie restriction.",
     sources: [
-      { title: "Comparative effectiveness of intermittent fasting for weight loss", publisher: "The BMJ", year: 2025, url: "https://temertymedicine.utoronto.ca/" },
+      { title: "Intermittent fasting strategies and their effects on body weight and other cardiometabolic risk factors: systematic review and network meta-analysis", publisher: "The BMJ", year: 2025, url: "https://doi.org/10.1136/bmj-2024-082007" },
     ],
   },
   {
@@ -126,7 +124,7 @@ export const TOPICS = [
     limitations: "Almost no human trials exist, so the lack of evidence reflects a lack of research.",
     wouldChange: "Well-designed human trials showing a detox product removes specific toxins.",
     sources: [
-      { title: "Detoxes and Cleanses: What You Need to Know", publisher: "NCCIH (NIH)", year: 2019, url: "https://www.nccih.nih.gov/" },
+      { title: "Detoxes and Cleanses: What You Need to Know", publisher: "NCCIH (NIH)", year: 2019, url: "https://www.nccih.nih.gov/health/detoxes-and-cleanses-what-you-need-to-know" },
       { title: "Detox diets for toxin elimination and weight management: a critical review", publisher: "PubMed", year: 2015, url: "https://pubmed.ncbi.nlm.nih.gov/25522674/" },
     ],
   },
@@ -154,7 +152,7 @@ export const TOPICS = [
     limitations: "Vitamin A is needed for normal vision, so the myth exaggerates something partly true.",
     wouldChange: "Research showing extra carrots improve vision in people who already get enough vitamin A.",
     sources: [
-      { title: "Common eye and vision myths", publisher: "American Academy of Ophthalmology", year: 2024, url: "https://www.aao.org/" },
+      { title: "Common Eye and Vision Myths", publisher: "American Academy of Ophthalmology", year: 2026, url: "https://www.aao.org/eye-health/tips-prevention/five-vision-myths" },
     ],
   },
   {
@@ -170,7 +168,7 @@ export const TOPICS = [
       { title: "Cold water immersion and immune function: a meta-analysis", publisher: "PubMed", year: 2025, url: "https://pubmed.ncbi.nlm.nih.gov/39879231/" },
     ],
   },
- 
+
   // ---------- CONTRADICTS (8) ----------
   {
     id: "mmr-vaccine-autism",
@@ -182,8 +180,8 @@ export const TOPICS = [
     limitations: "These are observational studies, since children can't be randomly assigned to go unvaccinated.",
     wouldChange: "Large, rigorous studies finding a higher autism risk after MMR vaccination.",
     sources: [
-      { title: "Measles, Mumps, Rubella Vaccination and Autism: A Nationwide Cohort Study", publisher: "Annals of Internal Medicine", year: 2019, url: "https://pubmed.ncbi.nlm.nih.gov/" },
-      { title: "Vaccines, thiomersal and autism spectrum disorder: evidence review 2010–2025", publisher: "World Health Organization", year: 2026, url: "https://www.who.int/" },
+      { title: "Measles, Mumps, Rubella Vaccination and Autism: A Nationwide Cohort Study", publisher: "Annals of Internal Medicine", year: 2019, url: "https://pubmed.ncbi.nlm.nih.gov/30831578/" },
+      { title: "Vaccines, thiomersal and autism spectrum disorder: evidence review 2010–2025", publisher: "World Health Organization", year: 2025, url: "https://www.who.int/publications/i/item/9789240123533" },
     ],
   },
   {
@@ -196,7 +194,7 @@ export const TOPICS = [
     limitations: "This applies to uncomplicated viral colds and flu, not to bacterial infections.",
     wouldChange: "Trials showing antibiotics speed recovery from an uncomplicated viral cold or flu.",
     sources: [
-      { title: "Antibiotic Do's and Don'ts", publisher: "CDC", year: 2024, url: "https://www.cdc.gov/" },
+      { title: "Antibiotics Do Not Treat Viruses", publisher: "CDC", year: 2026, url: "https://www.cdc.gov/antibiotic-use/communication-resources/wrong-tool-for-virus.html" },
       { title: "Antibiotics for the common cold", publisher: "Cochrane Database of Systematic Reviews", year: 2013, url: "https://doi.org/10.1002/14651858.CD000247.pub3" },
     ],
   },
@@ -210,8 +208,8 @@ export const TOPICS = [
     limitations: "The conclusion rests on the pattern across at least 12 trials, and parents' expectations can change how they rate behavior.",
     wouldChange: "A well-controlled trial showing a clear effect of sugar on children's behavior.",
     sources: [
-      { title: "Medical myths", publisher: "BMJ", year: 2007, url: "https://www.bmj.com/" },
-      { title: "Maternal expectancy effects on perceived child behavior", publisher: "Journal of Abnormal Child Psychology", year: 1994, url: "" },
+      { title: "Festive medical myths", publisher: "BMJ", year: 2008, url: "https://hdl.handle.net/1805/4262" },
+      { title: "Effects of sugar ingestion expectancies on mother-child interactions", publisher: "Journal of Abnormal Child Psychology", year: 1994, url: "https://uknowledge.uky.edu/psychology_facpub/13" },
     ],
   },
   {
@@ -224,8 +222,8 @@ export const TOPICS = [
     limitations: "The evidence comes from comparison studies, including one case-control study.",
     wouldChange: "A long-term study following knuckle-crackers over time and finding more hand osteoarthritis.",
     sources: [
-      { title: "Knuckle cracking and hand osteoarthritis", publisher: "Journal of the American Board of Family Medicine", year: 2011, url: "https://pubmed.ncbi.nlm.nih.gov/" },
-      { title: "Effect of habitual knuckle cracking on hand function", publisher: "PubMed", year: 1990, url: "https://pubmed.ncbi.nlm.nih.gov/" },
+      { title: "Knuckle cracking and hand osteoarthritis", publisher: "Journal of the American Board of Family Medicine", year: 2011, url: "https://www.jabfm.org/content/24/2/169" },
+      { title: "Effect of habitual knuckle cracking on hand function", publisher: "Annals of the Rheumatic Diseases", year: 1990, url: "https://pubmed.ncbi.nlm.nih.gov/2344210/" },
     ],
   },
   {
@@ -238,7 +236,7 @@ export const TOPICS = [
     limitations: "This says natural isn't automatically safe. It doesn't say every herbal product is harmful.",
     wouldChange: "Safety evidence for one specific product would apply to that product only, not to all natural products.",
     sources: [
-      { title: "Natural Doesn't Necessarily Mean Safer, or Better", publisher: "NIH NCCIH", year: 2023, url: "https://www.nccih.nih.gov/" },
+      { title: "Natural Doesn't Necessarily Mean Safer, or Better", publisher: "NIH NCCIH", year: 2023, url: "https://www.nccih.nih.gov/health/know-science/natural-doesnt-mean-better" },
     ],
   },
   {
@@ -251,7 +249,7 @@ export const TOPICS = [
     limitations: "Acne has several causes, and bacteria and inflammation play a role in some lesions.",
     wouldChange: "Studies showing that washing more often clears acne.",
     sources: [
-      { title: "Acne: Signs and symptoms", publisher: "American Academy of Dermatology", year: 2024, url: "https://www.aad.org/" },
+      { title: "Acne - Symptoms and causes", publisher: "Mayo Clinic", year: 2024, url: "https://www.mayoclinic.org/diseases-conditions/acne/symptoms-causes/syc-20368047" },
     ],
   },
   {
@@ -264,7 +262,7 @@ export const TOPICS = [
     limitations: "The evidence covers normal screen use, and long sessions can still cause temporary eye strain and affect sleep.",
     wouldChange: "Long-term human studies linking screen blue light to retinal damage.",
     sources: [
-      { title: "Digital Devices and Your Eyes", publisher: "American Academy of Ophthalmology", year: 2025, url: "https://www.aao.org/" },
+      { title: "Should You Be Worried About Blue Light?", publisher: "American Academy of Ophthalmology", year: 2021, url: "https://www.aao.org/eye-health/tips-prevention/should-you-be-worried-about-blue-light" },
     ],
   },
   {
@@ -277,9 +275,7 @@ export const TOPICS = [
     limitations: "Cold weather raises your chances indirectly, through time indoors near others and dry air.",
     wouldChange: "Evidence that cold temperature alone, without a virus, causes a cold.",
     sources: [
-      { title: "Can Cold Weather Cause a Cold?", publisher: "Mayo Clinic Minute", year: 2023, url: "https://newsnetwork.mayoclinic.org/" },
+      { title: "Can Cold Weather Cause a Cold?", publisher: "Mayo Clinic Minute", year: 2024, url: "https://newsnetwork.mayoclinic.org/discussion/1-16mayo-clinic-minute-can-cold-weather-cause-a-cold/" },
     ],
   },
 ];
- 
-Claude finished the response

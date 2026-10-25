@@ -12,9 +12,9 @@ Built for the 2026 Congressional App Challenge, Texas's 21st District.
 
 ## Why we built it
 
-Health myths spread fast online, and most posts show no source. Most fact-checking tools say only true or false, but evidence has shades: some claims are well supported, some are supported only a little, and some have never been properly tested.
+Nowadays, health information spreads faster than ever online, but the evidence behind it often gets lost. A confident-looking video or post can reach thousands of people without showing where the claim came from, and many existing fact-checking tools reduce complicated scientific questions to a simple “true” or “false.”
 
-[Add one or two sentences from your own "inspiration" answer here.]
+We were inspired by how often we saw health claims online that sounded convincing but were difficult to verify without digging through dense research papers ourselves. We wanted to make that process easier for everyone by creating a tool that does more than label a claim. It shows how strong the evidence is, where it comes from, and why the conclusion may change as new research emerges. Our goal is to give people the tools to make informed health decisions based on evidence, not on how convincing or popular a claim appears online.
 
 ## What the app does
 

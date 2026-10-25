@@ -8,7 +8,7 @@ Built for the 2026 Congressional App Challenge, Texas's 21st District.
 
 - **Team:** Swara Jadhav, Revanth Movva, Sragvi Madishetty (Ronald Reagan High School)
 - **Demo video:** [paste your YouTube link here]
-- **Live app (optional):** [paste your Vercel link here, or delete this line]
+- **Live app (optional):** https://medcheck-steel.vercel.app
 
 ## Why we built it
 
@@ -98,7 +98,6 @@ The Feed, Fact Check, and Quiz all read from this one file, so adding a topic me
 - Planning the app, such as the React components, styling, and bug fixes. We run it, test it, and can explain how it works.
 - Making the app icon artwork.
 - Building a verification script that uses the PubMed API and Claude to ask whether a source supports an explanation. We built it but have **not** run it on our final topics, so all of our checking was done by hand.
-- Helping prepare our demo slides, video script, screen-recording edit, and this README.
 
 The finished app does not use AI while it runs. It contains no AI calls, only the text we published.
 

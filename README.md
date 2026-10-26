@@ -7,7 +7,7 @@ A short-form, swipe-through app for teens and adults who see health claims on so
 Built for the 2026 Congressional App Challenge, Texas's 21st District.
 
 - **Team:** Swara Jadhav, Revanth Movva, Sragvi Madishetty (Ronald Reagan High School)
-- **Demo video:** youtube.com/watch?v=zVCDjAjTWhs&feature=youtu.be
+- **Demo video:** https://www.youtube.com/watch?v=zVCDjAjTWhs
 - **Live app:** https://medcheck-steel.vercel.app
 
 ## Why we built it

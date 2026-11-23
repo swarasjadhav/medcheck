@@ -1,18 +1,13 @@
-import React, { useState, useMemo } from "react";
-import { Search, ChevronLeft, ExternalLink, Home, FileSearch, BookMarked, ChevronUp, ChevronDown, HelpCircle, AlertTriangle } from "lucide-react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Search, ChevronLeft, ExternalLink, Home, FileSearch, BookMarked, ChevronUp, ChevronDown, HelpCircle, AlertTriangle, Share2 } from "lucide-react";
 import { TOPICS } from "./topics-data.js";
+import { EVIDENCE_LEVELS } from "./evidence-levels.js";
+import { pathFor, parsePath, claimUrl } from "./routes.js";
 import QuizScreen from "./QuizScreen.jsx";
 
 // ---------------------------------------------------------------------------
 // SHARED UI PIECES
 // ---------------------------------------------------------------------------
-
-const EVIDENCE_LEVELS = {
-  strong: { label: "Strong evidence", value: 4, color: "#2D7D6E" },
-  limited: { label: "Limited evidence", value: 3, color: "#4A6FA5" },
-  unclear: { label: "Unclear / mixed", value: 2, color: "#8B8378" },
-  contradicts: { label: "Contradicts claim", value: 1, color: "#C4571F" },
-};
 
 // App icon: a magnifying glass with a check mark inside (check the evidence),
 // plus a small medical plus. Same artwork as public/icon.svg.
@@ -410,7 +405,124 @@ function FactCheckScreen({ onOpenTopic }) {
 // SCREEN 3: SOURCE / EVIDENCE DETAIL PAGE
 // ---------------------------------------------------------------------------
 
-function SourceScreen({ topic, onBack }) {
+// Shares the claim's link: opens the phone's share sheet when there is one,
+// otherwise copies the link and says so.
+function ShareButton({ topic }) {
+  const [status, setStatus] = useState("");
+  const timer = useRef(null);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const flash = (message) => {
+    setStatus(message);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setStatus(""), 3000);
+  };
+
+  const share = async () => {
+    const url = claimUrl(topic.id);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `"${topic.claim}" · MedCheck`,
+          text: `${EVIDENCE_LEVELS[topic.verdict].label}: ${topic.short}`,
+          url,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      flash("Link copied");
+    } catch (err) {
+      if (err && err.name === "AbortError") return; // they closed the share sheet
+      flash("Couldn't copy. Copy the link from the address bar.");
+    }
+  };
+
+  return (
+    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span
+        role="status"
+        aria-live="polite"
+        style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#2D7D6E" }}
+      >
+        {status}
+      </span>
+      <button
+        onClick={share}
+        aria-label={`Share the evidence for: ${topic.claim}`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          background: "none",
+          border: "1px solid #E4DFD6",
+          borderRadius: 999,
+          cursor: "pointer",
+          color: "#1A2E35",
+          fontFamily: "Inter, sans-serif",
+          fontSize: 13,
+          fontWeight: 600,
+          padding: "6px 12px",
+        }}
+      >
+        <Share2 size={15} />
+        Share
+      </button>
+    </span>
+  );
+}
+
+function SourceScreen({ topic, missingId, onBack }) {
+  if (!topic && missingId) {
+    return (
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 14,
+          fontFamily: "Inter, sans-serif",
+          color: "#5C574F",
+          fontSize: 14,
+          lineHeight: 1.6,
+          padding: 24,
+          textAlign: "center",
+          background: "#FAF8F4",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Source Serif 4', Georgia, serif",
+            fontSize: 17,
+            fontWeight: 600,
+            color: "#1A2E35",
+          }}
+        >
+          We couldn't find that claim
+        </div>
+        The link may be mistyped, or the claim may have moved.
+        <button
+          onClick={onBack}
+          style={{
+            background: "none",
+            border: "1.5px solid #2D7D6E",
+            color: "#2D7D6E",
+            borderRadius: 999,
+            padding: "8px 16px",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Go to the feed
+        </button>
+      </div>
+    );
+  }
+
   if (!topic) {
     return (
       <div
@@ -440,6 +552,7 @@ function SourceScreen({ topic, onBack }) {
         style={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: 6,
           padding: "16px 16px 0",
         }}
@@ -462,6 +575,7 @@ function SourceScreen({ topic, onBack }) {
           <ChevronLeft size={18} />
           Back
         </button>
+        <ShareButton topic={topic} />
       </div>
 
       <div style={{ padding: "12px 20px 28px" }}>
@@ -677,16 +791,67 @@ function SourceScreen({ topic, onBack }) {
 // APP SHELL
 // ---------------------------------------------------------------------------
 
+const PAGE_TITLES = {
+  feed: "MedCheck: what the evidence says about health claims",
+  check: "Check a claim · MedCheck",
+  quiz: "Quiz · MedCheck",
+  sources: "Sources · MedCheck",
+};
+
 export default function App() {
-  const [tab, setTab] = useState("feed");
-  const [activeTopic, setActiveTopic] = useState(null);
+  // The web address decides the first screen, so a shared link
+  // like /claim/vitamin-c-colds opens straight to that claim.
+  const [initialRoute] = useState(() => parsePath(window.location.pathname));
+  const [tab, setTab] = useState(initialRoute.tab);
+  const [activeTopicId, setActiveTopicId] = useState(initialRoute.topicId);
   const [returnTab, setReturnTab] = useState("feed");
+
+  const activeTopic = TOPICS.find((t) => t.id === activeTopicId) || null;
+  const missingId = activeTopicId && !activeTopic ? activeTopicId : null;
+
+  // Switch screens and update the address bar to match.
+  const go = (nextTab, topicId) => {
+    if (topicId !== undefined) setActiveTopicId(topicId);
+    setTab(nextTab);
+    const path = pathFor(nextTab, topicId !== undefined ? topicId : activeTopicId);
+    if (path !== window.location.pathname) {
+      window.history.pushState({ inApp: true }, "", path);
+    }
+  };
 
   const openTopic = (topic) => {
     setReturnTab(tab); // so Back returns to where you came from
-    setActiveTopic(topic);
-    setTab("sources");
+    go("sources", topic.id);
   };
+
+  const goBack = () => {
+    // Opened from inside the app: use the browser's history.
+    // Opened from a shared link: there's nothing to go back to, so show the feed.
+    if (window.history.state && window.history.state.inApp) {
+      window.history.back();
+    } else {
+      go(missingId ? "feed" : returnTab, missingId ? null : undefined);
+    }
+  };
+
+  // Browser back/forward buttons.
+  useEffect(() => {
+    const onPopState = () => {
+      const route = parsePath(window.location.pathname);
+      setTab(route.tab);
+      if (route.tab === "sources") setActiveTopicId(route.topicId);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  // Browser tab title.
+  useEffect(() => {
+    document.title =
+      tab === "sources" && activeTopic
+        ? `${activeTopic.claim}: what the evidence says · MedCheck`
+        : PAGE_TITLES[tab] || PAGE_TITLES.feed;
+  }, [tab, activeTopic]);
 
   return (
     <div
@@ -743,10 +908,10 @@ export default function App() {
       {tab === "check" && <FactCheckScreen onOpenTopic={openTopic} />}
       {tab === "quiz" && <QuizScreen onOpenTopic={openTopic} topics={TOPICS} />}
       {tab === "sources" && (
-        <SourceScreen topic={activeTopic} onBack={() => setTab(returnTab)} />
+        <SourceScreen topic={activeTopic} missingId={missingId} onBack={goBack} />
       )}
 
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar active={tab} onChange={(nextTab) => go(nextTab)} />
     </div>
   );
 }

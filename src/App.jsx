@@ -1,90 +1,46 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Search, ChevronLeft, ExternalLink, Home, FileSearch, BookMarked, ChevronUp, ChevronDown, HelpCircle, AlertTriangle, Share2 } from "lucide-react";
+// The app shell: header, screens, tab bar, and moving between screens.
+// Each screen lives in src/screens/. Shared UI is in src/ui.jsx.
+import React, { useEffect, useState } from "react";
+import { Home, FileSearch, HelpCircle, Bookmark, User } from "lucide-react";
 import { TOPICS } from "./topics-data.js";
-import { EVIDENCE_LEVELS } from "./evidence-levels.js";
-import { pathFor, parsePath, claimUrl } from "./routes.js";
-import QuizScreen from "./QuizScreen.jsx";
+import { pathFor, parsePath } from "./routes.js";
+import { useAuth } from "./lib/useAuth.js";
+import { useSavedClaims } from "./lib/useSavedClaims.js";
+import { COLORS, SANS, SERIF, Logo } from "./ui.jsx";
+import FeedScreen from "./screens/FeedScreen.jsx";
+import FactCheckScreen from "./screens/FactCheckScreen.jsx";
+import ClaimScreen from "./screens/ClaimScreen.jsx";
+import QuizScreen from "./screens/QuizScreen.jsx";
+import SavedScreen from "./screens/SavedScreen.jsx";
+import AccountScreen from "./screens/AccountScreen.jsx";
+import HowWeRateScreen from "./screens/HowWeRateScreen.jsx";
 
-// ---------------------------------------------------------------------------
-// SHARED UI PIECES
-// ---------------------------------------------------------------------------
+const TABS = [
+  { id: "feed", label: "Feed", Icon: Home },
+  { id: "check", label: "Fact Check", Icon: FileSearch },
+  { id: "quiz", label: "Quiz", Icon: HelpCircle },
+  { id: "saved", label: "Saved", Icon: Bookmark },
+];
 
-// App icon: a magnifying glass with a check mark inside (check the evidence),
-// plus a small medical plus. Same artwork as public/icon.svg.
-function Logo({ size = 22 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 512 512" aria-label="MedCheck logo" role="img">
-      <defs>
-        <linearGradient id="mc-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#2D7D6E" />
-          <stop offset="1" stopColor="#1F5E52" />
-        </linearGradient>
-      </defs>
-      <rect width="512" height="512" rx="112" fill="url(#mc-bg)" />
-      <circle cx="232" cy="236" r="108" fill="none" stroke="#FAF8F4" strokeWidth="36" />
-      <line x1="312" y1="316" x2="404" y2="408" stroke="#FAF8F4" strokeWidth="42" strokeLinecap="round" />
-      <path d="M184 238 L222 276 L286 198" fill="none" stroke="#FAF8F4" strokeWidth="34" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M396 84 V148 M364 116 H428" fill="none" stroke="#8FC9BC" strokeWidth="24" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function EvidenceMeter({ level, size = "md" }) {
-  const info = EVIDENCE_LEVELS[level];
-  const bars = 4;
-  const height = size === "sm" ? 14 : 20;
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ display: "flex", gap: 3 }}>
-        {Array.from({ length: bars }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              width: size === "sm" ? 5 : 7,
-              height: height - i * (size === "sm" ? 2 : 3),
-              alignSelf: "flex-end",
-              borderRadius: 2,
-              background: i < info.value ? info.color : "#E4DFD6",
-            }}
-          />
-        ))}
-      </div>
-      <span
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: size === "sm" ? 12 : 13,
-          fontWeight: 600,
-          color: info.color,
-        }}
-      >
-        {info.label}
-      </span>
-    </div>
-  );
-}
+const PAGE_TITLES = {
+  feed: "MedCheck: what the evidence says about health claims",
+  check: "Check a claim · MedCheck",
+  quiz: "Quiz · MedCheck",
+  saved: "Saved claims · MedCheck",
+  account: "Account · MedCheck",
+  howWeRate: "How we rate evidence · MedCheck",
+};
 
 function TabBar({ active, onChange }) {
-  const tabs = [
-    { id: "feed", label: "Feed", Icon: Home },
-    { id: "check", label: "Fact Check", Icon: FileSearch },
-    { id: "quiz", label: "Quiz", Icon: HelpCircle },
-    { id: "sources", label: "Sources", Icon: BookMarked },
-  ];
   return (
-    <div
-      style={{
-        display: "flex",
-        borderTop: "1px solid #E4DFD6",
-        background: "#FAF8F4",
-        flexShrink: 0,
-      }}
-    >
-      {tabs.map(({ id, label, Icon }) => {
+    <nav aria-label="Main" className="tab-bar">
+      {TABS.map(({ id, label, Icon }) => {
         const isActive = active === id;
         return (
           <button
             key={id}
             onClick={() => onChange(id)}
+            aria-current={isActive ? "page" : undefined}
             style={{
               flex: 1,
               display: "flex",
@@ -95,823 +51,145 @@ function TabBar({ active, onChange }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: isActive ? "#2D7D6E" : "#8B8378",
+              color: isActive ? COLORS.teal : COLORS.muted,
             }}
           >
-            <Icon size={19} strokeWidth={isActive ? 2.4 : 1.8} />
-            <span
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontSize: 10.5,
-                fontWeight: isActive ? 700 : 500,
-              }}
-            >
-              {label}
-            </span>
+            <Icon size={19} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
+            <span style={{ fontFamily: SANS, fontSize: 11, fontWeight: isActive ? 700 : 500 }}>{label}</span>
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }
-
-// ---------------------------------------------------------------------------
-// SCREEN 1: SCROLLING FEED
-// ---------------------------------------------------------------------------
-
-function FeedCard({ topic, onOpen }) {
-  const info = EVIDENCE_LEVELS[topic.verdict];
-  return (
-    <div
-      style={{
-        height: "100%",
-        scrollSnapAlign: "start",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "32px 24px",
-        boxSizing: "border-box",
-        background: `linear-gradient(180deg, #1A2E35 0%, #16262C 100%)`,
-        color: "#FAF8F4",
-        position: "relative",
-        flexShrink: 0,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: 0.3,
-          color: info.color,
-          marginBottom: 14,
-        }}
-      >
-        MYTH OR FACT
-      </div>
-      <h2
-        style={{
-          fontFamily: "'Source Serif 4', Georgia, serif",
-          fontSize: 24,
-          lineHeight: 1.3,
-          fontWeight: 600,
-          margin: 0,
-          marginBottom: 18,
-        }}
-      >
-        "{topic.claim}"
-      </h2>
-      <p
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: 15,
-          lineHeight: 1.6,
-          color: "#D8D2C6",
-          margin: 0,
-          marginBottom: 16,
-        }}
-      >
-        {topic.short}
-      </p>
-      {topic.caution && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 8,
-            background: "rgba(196,87,31,0.18)",
-            border: "1px solid rgba(196,87,31,0.4)",
-            borderRadius: 10,
-            padding: "10px 12px",
-            marginBottom: 16,
-          }}
-        >
-          <AlertTriangle size={15} color="#E08A52" style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12.5, color: "#F0D9C8", lineHeight: 1.4 }}>
-            {topic.caution}
-          </span>
-        </div>
-      )}
-      <div style={{ marginBottom: 22 }}>
-        <EvidenceMeter level={topic.verdict} />
-      </div>
-      <button
-        onClick={() => onOpen(topic)}
-        style={{
-          alignSelf: "flex-start",
-          background: "none",
-          border: "1.5px solid rgba(250,248,244,0.4)",
-          color: "#FAF8F4",
-          borderRadius: 999,
-          padding: "9px 18px",
-          fontFamily: "Inter, sans-serif",
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        See the evidence
-      </button>
-      <div
-        style={{
-          position: "absolute",
-          bottom: 18,
-          right: 20,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          color: "rgba(250,248,244,0.35)",
-        }}
-      >
-        <ChevronUp size={16} />
-        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10 }}>swipe</span>
-        <ChevronDown size={16} />
-      </div>
-    </div>
-  );
-}
-
-function FeedScreen({ onOpenTopic }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        overflowY: "scroll",
-        scrollSnapType: "y mandatory",
-      }}
-    >
-      {TOPICS.map((t) => (
-        <FeedCard key={t.id} topic={t} onOpen={onOpenTopic} />
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SCREEN 2: FACT-CHECK SEARCH
-// ---------------------------------------------------------------------------
-
-function FactCheckScreen({ onOpenTopic }) {
-  const [query, setQuery] = useState("");
-
-  const results = useMemo(() => {
-    if (!query.trim()) return TOPICS;
-    const q = query.toLowerCase();
-    return TOPICS.filter(
-      (t) =>
-        t.claim.toLowerCase().includes(q) || t.short.toLowerCase().includes(q)
-    );
-  }, [query]);
-
-  return (
-    <div style={{ flex: 1, overflowY: "auto", background: "#FAF8F4" }}>
-      <div style={{ padding: "20px 20px 8px" }}>
-        <h1
-          style={{
-            fontFamily: "'Source Serif 4', Georgia, serif",
-            fontSize: 22,
-            fontWeight: 600,
-            color: "#1A2E35",
-            margin: "0 0 4px",
-          }}
-        >
-          Check a claim
-        </h1>
-        <p
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 13,
-            color: "#8B8378",
-            margin: "0 0 16px",
-          }}
-        >
-          Search a medical claim you've heard to see what the evidence says.
-        </p>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: "#fff",
-            border: "1px solid #E4DFD6",
-            borderRadius: 12,
-            padding: "10px 14px",
-          }}
-        >
-          <Search size={17} color="#8B8378" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="e.g. vitamin C, antibiotics, sugar..."
-            style={{
-              border: "none",
-              outline: "none",
-              flex: 1,
-              fontFamily: "Inter, sans-serif",
-              fontSize: 14,
-              background: "transparent",
-              color: "#1A2E35",
-            }}
-          />
-        </div>
-      </div>
-
-      <div style={{ padding: "8px 20px 20px" }}>
-        {results.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "32px 20px",
-              fontFamily: "Inter, sans-serif",
-              color: "#5C574F",
-              fontSize: 14,
-              lineHeight: 1.6,
-              background: "#fff",
-              border: "1px solid #E4DFD6",
-              borderRadius: 12,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Source Serif 4', Georgia, serif",
-                fontSize: 17,
-                fontWeight: 600,
-                color: "#1A2E35",
-                marginBottom: 8,
-              }}
-            >
-              We haven't reviewed this claim yet
-            </div>
-            That doesn't mean it's true or false. We only rate claims we've checked
-            against real sources.
-            <div style={{ marginTop: 14 }}>
-              <a
-                href={`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(query.trim())}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: "#2D7D6E",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                }}
-              >
-                Search PubMed for it <ExternalLink size={14} />
-              </a>
-            </div>
-          </div>
-        )}
-        {results.map((t) => {
-          return (
-            <button
-              key={t.id}
-              onClick={() => onOpenTopic(t)}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                background: "#fff",
-                border: "1px solid #E4DFD6",
-                borderRadius: 12,
-                padding: "14px 16px",
-                marginBottom: 10,
-                cursor: "pointer",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Source Serif 4', Georgia, serif",
-                  fontSize: 15.5,
-                  fontWeight: 600,
-                  color: "#1A2E35",
-                  marginBottom: 8,
-                  lineHeight: 1.35,
-                }}
-              >
-                {t.claim}
-              </div>
-              <EvidenceMeter level={t.verdict} size="sm" />
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SCREEN 3: SOURCE / EVIDENCE DETAIL PAGE
-// ---------------------------------------------------------------------------
-
-// Shares the claim's link: opens the phone's share sheet when there is one,
-// otherwise copies the link and says so.
-function ShareButton({ topic }) {
-  const [status, setStatus] = useState("");
-  const timer = useRef(null);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const flash = (message) => {
-    setStatus(message);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setStatus(""), 3000);
-  };
-
-  const share = async () => {
-    const url = claimUrl(topic.id);
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `"${topic.claim}" · MedCheck`,
-          text: `${EVIDENCE_LEVELS[topic.verdict].label}: ${topic.short}`,
-          url,
-        });
-        return;
-      }
-      await navigator.clipboard.writeText(url);
-      flash("Link copied");
-    } catch (err) {
-      if (err && err.name === "AbortError") return; // they closed the share sheet
-      flash("Couldn't copy. Copy the link from the address bar.");
-    }
-  };
-
-  return (
-    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <span
-        role="status"
-        aria-live="polite"
-        style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#2D7D6E" }}
-      >
-        {status}
-      </span>
-      <button
-        onClick={share}
-        aria-label={`Share the evidence for: ${topic.claim}`}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          background: "none",
-          border: "1px solid #E4DFD6",
-          borderRadius: 999,
-          cursor: "pointer",
-          color: "#1A2E35",
-          fontFamily: "Inter, sans-serif",
-          fontSize: 13,
-          fontWeight: 600,
-          padding: "6px 12px",
-        }}
-      >
-        <Share2 size={15} />
-        Share
-      </button>
-    </span>
-  );
-}
-
-function SourceScreen({ topic, missingId, onBack }) {
-  if (!topic && missingId) {
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 14,
-          fontFamily: "Inter, sans-serif",
-          color: "#5C574F",
-          fontSize: 14,
-          lineHeight: 1.6,
-          padding: 24,
-          textAlign: "center",
-          background: "#FAF8F4",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Source Serif 4', Georgia, serif",
-            fontSize: 17,
-            fontWeight: 600,
-            color: "#1A2E35",
-          }}
-        >
-          We couldn't find that claim
-        </div>
-        The link may be mistyped, or the claim may have moved.
-        <button
-          onClick={onBack}
-          style={{
-            background: "none",
-            border: "1.5px solid #2D7D6E",
-            color: "#2D7D6E",
-            borderRadius: 999,
-            padding: "8px 16px",
-            fontFamily: "Inter, sans-serif",
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Go to the feed
-        </button>
-      </div>
-    );
-  }
-
-  if (!topic) {
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Inter, sans-serif",
-          color: "#8B8378",
-          fontSize: 14,
-          padding: 20,
-          textAlign: "center",
-          background: "#FAF8F4",
-        }}
-      >
-        Open a topic from the Feed, Fact Check, or Quiz tab to see its full sources here.
-      </div>
-    );
-  }
-
-  const info = EVIDENCE_LEVELS[topic.verdict];
-
-  return (
-    <div style={{ flex: 1, overflowY: "auto", background: "#FAF8F4" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 6,
-          padding: "16px 16px 0",
-        }}
-      >
-        <button
-          onClick={onBack}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "#8B8378",
-            fontFamily: "Inter, sans-serif",
-            fontSize: 13,
-            padding: 4,
-          }}
-        >
-          <ChevronLeft size={18} />
-          Back
-        </button>
-        <ShareButton topic={topic} />
-      </div>
-
-      <div style={{ padding: "12px 20px 28px" }}>
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            color: "#8B8378",
-            marginBottom: 10,
-          }}
-        >
-          THE CLAIM
-        </div>
-        <h1
-          style={{
-            fontFamily: "'Source Serif 4', Georgia, serif",
-            fontSize: 22,
-            fontWeight: 600,
-            color: "#1A2E35",
-            lineHeight: 1.35,
-            margin: "0 0 16px",
-          }}
-        >
-          "{topic.claim}"
-        </h1>
-
-        <div
-          style={{
-            background: "#fff",
-            border: `1.5px solid ${info.color}33`,
-            borderRadius: 12,
-            padding: "14px 16px",
-            marginBottom: 16,
-          }}
-        >
-          <EvidenceMeter level={topic.verdict} />
-        </div>
-
-        {topic.caution && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 8,
-              background: "#FDF1EA",
-              border: "1px solid #E8B892",
-              borderRadius: 10,
-              padding: "12px 14px",
-              marginBottom: 22,
-            }}
-          >
-            <AlertTriangle size={16} color="#C4571F" style={{ flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, color: "#8A3F18", lineHeight: 1.5 }}>
-              {topic.caution}
-            </span>
-          </div>
-        )}
-
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            color: "#8B8378",
-            marginBottom: 8,
-          }}
-        >
-          WHAT THE EVIDENCE SAYS
-        </div>
-        <p
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 15,
-            lineHeight: 1.65,
-            color: "#33302A",
-            margin: "0 0 26px",
-          }}
-        >
-          {topic.explanation}
-        </p>
-
-        {(topic.limitations || topic.wouldChange) && (
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #E4DFD6",
-              borderRadius: 12,
-              padding: "14px 16px",
-              margin: "0 0 26px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-            }}
-          >
-            {topic.limitations && (
-              <div>
-                <div
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                    color: info.color,
-                    marginBottom: 5,
-                  }}
-                >
-                  LIMITATIONS
-                </div>
-                <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, lineHeight: 1.55, color: "#33302A" }}>
-                  {topic.limitations}
-                </div>
-              </div>
-            )}
-            {topic.wouldChange && (
-              <div>
-                <div
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                    color: info.color,
-                    marginBottom: 5,
-                  }}
-                >
-                  WHAT WOULD CHANGE THIS CONCLUSION
-                </div>
-                <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, lineHeight: 1.55, color: "#33302A" }}>
-                  {topic.wouldChange}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            color: "#8B8378",
-            marginBottom: 10,
-          }}
-        >
-          SOURCES
-        </div>
-        {topic.sources.map((s, i) => (
-          <a
-            key={i}
-            href={s.url || "#"}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 10,
-              textDecoration: "none",
-              background: "#fff",
-              border: "1px solid #E4DFD6",
-              borderRadius: 12,
-              padding: "13px 15px",
-              marginBottom: 10,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: 13.5,
-                  fontWeight: 600,
-                  color: "#1A2E35",
-                  marginBottom: 3,
-                }}
-              >
-                {s.title}
-              </div>
-              <div
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: 12,
-                  color: "#8B8378",
-                }}
-              >
-                {s.publisher} · {s.year}
-              </div>
-            </div>
-            <ExternalLink size={15} color="#8B8378" style={{ flexShrink: 0, marginTop: 2 }} />
-          </a>
-        ))}
-        <p
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 11.5,
-            lineHeight: 1.5,
-            color: "#8B8378",
-            margin: "18px 0 0",
-          }}
-        >
-          For education only. MedCheck is not medical advice. Talk to a doctor or
-          pharmacist about your own health.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// APP SHELL
-// ---------------------------------------------------------------------------
-
-const PAGE_TITLES = {
-  feed: "MedCheck: what the evidence says about health claims",
-  check: "Check a claim · MedCheck",
-  quiz: "Quiz · MedCheck",
-  sources: "Sources · MedCheck",
-};
 
 export default function App() {
   // The web address decides the first screen, so a shared link
   // like /claim/vitamin-c-colds opens straight to that claim.
-  const [initialRoute] = useState(() => parsePath(window.location.pathname));
-  const [tab, setTab] = useState(initialRoute.tab);
-  const [activeTopicId, setActiveTopicId] = useState(initialRoute.topicId);
-  const [returnTab, setReturnTab] = useState("feed");
+  const [route, setRoute] = useState(() => parsePath(window.location.pathname));
+  const [returnScreen, setReturnScreen] = useState("feed");
 
-  const activeTopic = TOPICS.find((t) => t.id === activeTopicId) || null;
-  const missingId = activeTopicId && !activeTopic ? activeTopicId : null;
+  const auth = useAuth();
+  const saves = useSavedClaims(auth.user);
+
+  const { screen, claimId } = route;
+  const activeTopic = screen === "claim" ? TOPICS.find((t) => t.id === claimId) || null : null;
 
   // Switch screens and update the address bar to match.
-  const go = (nextTab, topicId) => {
-    if (topicId !== undefined) setActiveTopicId(topicId);
-    setTab(nextTab);
-    const path = pathFor(nextTab, topicId !== undefined ? topicId : activeTopicId);
+  const go = (nextScreen, nextClaimId = null) => {
+    if (screen !== "claim" && screen !== "howWeRate") setReturnScreen(screen);
+    setRoute({ screen: nextScreen, claimId: nextClaimId });
+    const path = pathFor(nextScreen, nextClaimId);
     if (path !== window.location.pathname) {
       window.history.pushState({ inApp: true }, "", path);
     }
   };
 
-  const openTopic = (topic) => {
-    setReturnTab(tab); // so Back returns to where you came from
-    go("sources", topic.id);
-  };
+  const openTopic = (topic) => go("claim", topic.id);
 
   const goBack = () => {
     // Opened from inside the app: use the browser's history.
-    // Opened from a shared link: there's nothing to go back to, so show the feed.
+    // Opened from a shared link: there's nothing to go back to, so show where they came from.
     if (window.history.state && window.history.state.inApp) {
       window.history.back();
     } else {
-      go(missingId ? "feed" : returnTab, missingId ? null : undefined);
+      go(activeTopic || screen === "howWeRate" ? returnScreen : "feed");
     }
   };
 
   // Browser back/forward buttons.
   useEffect(() => {
-    const onPopState = () => {
-      const route = parsePath(window.location.pathname);
-      setTab(route.tab);
-      if (route.tab === "sources") setActiveTopicId(route.topicId);
-    };
+    const onPopState = () => setRoute(parsePath(window.location.pathname));
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
+  // A password-reset email link opens the Account screen to choose a new password.
+  useEffect(() => {
+    if (auth.recovering && screen !== "account") go("account");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.recovering]);
+
   // Browser tab title.
   useEffect(() => {
-    document.title =
-      tab === "sources" && activeTopic
-        ? `${activeTopic.claim}: what the evidence says · MedCheck`
-        : PAGE_TITLES[tab] || PAGE_TITLES.feed;
-  }, [tab, activeTopic]);
+    document.title = activeTopic
+      ? `${activeTopic.claim}: what the evidence says · MedCheck`
+      : PAGE_TITLES[screen] || PAGE_TITLES.feed;
+  }, [screen, activeTopic]);
+
+  const dark = screen === "feed";
+  const activeTab = TABS.some((t) => t.id === screen) ? screen : screen === "claim" ? returnScreen : null;
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 390,
-        height: 720,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-        background: "#FAF8F4",
-        borderRadius: 28,
-        overflow: "hidden",
-        boxShadow: "0 20px 60px rgba(26,46,53,0.25)",
-        fontFamily: "Inter, sans-serif",
-        border: "1px solid #E4DFD6",
-      }}
-    >
-      {/* status-bar-ish header */}
-      <div
-        style={{
-          padding: "14px 18px 10px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: tab === "feed" ? "#1A2E35" : "#FAF8F4",
-          flexShrink: 0,
-        }}
-      >
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div className="app-shell">
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      <header className="app-header" style={{ background: dark ? COLORS.dark : COLORS.bg }}>
+        <button
+          onClick={() => go("feed")}
+          aria-label="MedCheck home"
+          style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        >
           <Logo size={24} />
-          <span
-            style={{
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontWeight: 700,
-              fontSize: 16,
-              color: tab === "feed" ? "#FAF8F4" : "#1A2E35",
-            }}
-          >
+          <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: 16, color: dark ? COLORS.bg : COLORS.dark }}>
             MedCheck
           </span>
-        </span>
-        <span
+        </button>
+        <button
+          onClick={() => go("account")}
+          aria-label={auth.user ? "Your account" : "Account and sign in"}
+          aria-current={screen === "account" ? "page" : undefined}
           style={{
-            fontSize: 11,
-            color: tab === "feed" ? "rgba(250,248,244,0.5)" : "#8B8378",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            border: `1px solid ${dark ? "rgba(250,248,244,0.35)" : COLORS.border}`,
+            background: auth.user ? COLORS.teal : "none",
+            color: auth.user || dark ? COLORS.bg : COLORS.dark,
+            cursor: "pointer",
           }}
         >
-          {TOPICS.length} topics
-        </span>
-      </div>
+          <User size={17} aria-hidden="true" />
+        </button>
+      </header>
 
-      {tab === "feed" && <FeedScreen onOpenTopic={openTopic} />}
-      {tab === "check" && <FactCheckScreen onOpenTopic={openTopic} />}
-      {tab === "quiz" && <QuizScreen onOpenTopic={openTopic} topics={TOPICS} />}
-      {tab === "sources" && (
-        <SourceScreen topic={activeTopic} missingId={missingId} onBack={goBack} />
-      )}
+      <main id="main" tabIndex={-1} className="app-main">
+        {screen === "feed" && (
+          <FeedScreen topics={TOPICS} onOpenTopic={openTopic} isSaved={saves.isSaved} onToggleSave={saves.toggle} />
+        )}
+        {screen === "check" && <FactCheckScreen topics={TOPICS} onOpenTopic={openTopic} />}
+        {screen === "quiz" && <QuizScreen topics={TOPICS} onOpenTopic={openTopic} />}
+        {screen === "saved" && (
+          <SavedScreen
+            topics={TOPICS}
+            savedIds={saves.savedIds}
+            onOpenTopic={openTopic}
+            onToggleSave={saves.toggle}
+            user={auth.user}
+            syncError={saves.syncError}
+            onGoToAccount={() => go("account")}
+          />
+        )}
+        {screen === "account" && (
+          <AccountScreen auth={auth} savedCount={saves.savedIds.length} onOpenHowWeRate={() => go("howWeRate")} />
+        )}
+        {screen === "howWeRate" && <HowWeRateScreen onBack={goBack} />}
+        {screen === "claim" && (
+          <ClaimScreen
+            topic={activeTopic}
+            onBack={activeTopic ? goBack : () => go("feed")}
+            saved={activeTopic ? saves.isSaved(activeTopic.id) : false}
+            onToggleSave={saves.toggle}
+            onOpenHowWeRate={() => go("howWeRate")}
+          />
+        )}
+      </main>
 
-      <TabBar active={tab} onChange={(nextTab) => go(nextTab)} />
+      <TabBar active={activeTab} onChange={(next) => go(next)} />
     </div>
   );
 }

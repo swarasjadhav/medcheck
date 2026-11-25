@@ -2,6 +2,19 @@
  * topics-data.js — FINAL 20 curated topics
  * Same content as the planning version, just using `export` instead of
  * `module.exports` since Vite/React projects use ES modules.
+ *
+ * Fields for each claim:
+ *   id           lowercase-with-dashes; becomes the link, e.g. /claim/vitamin-c-colds.
+ *                Never change an id after launch, or shared links break.
+ *   claim        the claim as people say it
+ *   aliases      other ways people search for it (used by Fact Check search)
+ *   verdict      "strong" | "limited" | "unclear" | "contradicts"
+ *   short        one-line answer shown in the feed
+ *   explanation, limitations, wouldChange   the evidence page text
+ *   caution      optional safety warning
+ *   reviewedOn   optional "YYYY-MM-DD" date of the last full review (shown on the page)
+ *   sources      [{ title, publisher, year, url, type? }]
+ *                type is optional, e.g. "Meta-analysis", "Randomized trial", "Cohort study"
  */
 
 export const TOPICS = [
@@ -9,6 +22,7 @@ export const TOPICS = [
   {
     id: "exercise-depression",
     claim: "Exercise helps treat depression",
+    aliases: ["working out helps depression", "exercise mental health", "running improves mood", "yoga for depression", "workouts and depression"],
     verdict: "strong",
     short: "Yes — multiple RCTs show real, measurable benefit.",
     explanation:
@@ -22,6 +36,7 @@ export const TOPICS = [
   {
     id: "outdoor-time-myopia",
     claim: "Spending time outdoors reduces nearsightedness in kids",
+    aliases: ["going outside helps eyesight", "sunlight and nearsighted kids", "myopia in children", "kids need glasses less if outside"],
     verdict: "strong",
     short: "A well-designed, large trial found a real, meaningful effect.",
     explanation:
@@ -37,6 +52,7 @@ export const TOPICS = [
   {
     id: "vitamin-c-colds",
     claim: "Vitamin C prevents the common cold",
+    aliases: ["vitamin c keeps you from getting sick", "orange juice for a cold", "emergen-c", "vitamin c immune system"],
     verdict: "limited",
     short: "It doesn't prevent colds for most people, but may modestly shorten them.",
     explanation:
@@ -50,6 +66,7 @@ export const TOPICS = [
   {
     id: "multivitamins-disease",
     claim: "Multivitamins prevent heart disease and cancer in healthy adults",
+    aliases: ["daily vitamins", "do multivitamins work", "multivitamin cancer", "multivitamin heart health", "supplements prevent disease"],
     verdict: "limited",
     short: "Major reviews find no meaningful protective effect for most healthy adults.",
     explanation:
@@ -63,6 +80,7 @@ export const TOPICS = [
   {
     id: "probiotics-gut-health",
     claim: "Probiotics improve gut health",
+    aliases: ["probiotic yogurt", "gut bacteria supplements", "probiotics for digestion", "gut health"],
     verdict: "limited",
     short: "Benefit is real but depends heavily on strain and condition — not a blanket fix.",
     explanation:
@@ -76,6 +94,7 @@ export const TOPICS = [
   {
     id: "energy-drinks-teens",
     claim: "Energy drinks are bad for teens",
+    aliases: ["red bull", "monster energy", "celsius drink", "caffeine for teenagers", "energy drink heart"],
     verdict: "limited",
     short: "Linked to several health issues, but mostly through correlational data.",
     explanation:
@@ -91,6 +110,7 @@ export const TOPICS = [
   {
     id: "water-8-glasses",
     claim: "You need to drink 8 glasses of water a day",
+    aliases: ["how much water should i drink", "8x8 water rule", "two liters of water", "drink more water", "hydration"],
     verdict: "unclear",
     short: "There's no strong evidence behind this exact number.",
     explanation:
@@ -104,6 +124,7 @@ export const TOPICS = [
   {
     id: "intermittent-fasting-benefits",
     claim: "Intermittent fasting has proven health benefits beyond calorie restriction",
+    aliases: ["16:8 fasting", "fasting for weight loss", "skipping breakfast", "time restricted eating", "one meal a day"],
     verdict: "unclear",
     short: "Works about as well as regular calorie restriction — not clearly superior.",
     explanation:
@@ -117,6 +138,7 @@ export const TOPICS = [
   {
     id: "detox-tea-cleanse",
     claim: "Detox teas and juice cleanses remove toxins from your body",
+    aliases: ["detox", "juice cleanse", "liver cleanse", "flush out toxins", "colon cleanse", "skinny tea", "detox foot pads"],
     verdict: "unclear",
     short: "No evidence they work — but also almost no studies exist either way.",
     explanation:
@@ -131,6 +153,7 @@ export const TOPICS = [
   {
     id: "mouth-taping-sleep",
     claim: "Mouth taping helps you sleep better",
+    aliases: ["taping your mouth shut at night", "mouth tape snoring", "nose breathing while sleeping"],
     verdict: "unclear",
     short: "Barely studied, and some research flags a safety risk.",
     explanation:
@@ -145,6 +168,7 @@ export const TOPICS = [
   {
     id: "carrots-night-vision",
     claim: "Eating carrots dramatically improves your night vision",
+    aliases: ["carrots help you see in the dark", "carrots and eyesight", "vitamin a vision"],
     verdict: "unclear",
     short: "Vitamin A matters for vision — but carrots won't give you superhuman eyesight.",
     explanation:
@@ -158,6 +182,7 @@ export const TOPICS = [
   {
     id: "cold-plunges-immunity",
     claim: "Cold plunges boost your immune system",
+    aliases: ["ice bath", "cold showers immune system", "cold water immersion", "wim hof"],
     verdict: "unclear",
     short: "A big review found no immune benefit, and one marker briefly got worse.",
     explanation:
@@ -173,6 +198,7 @@ export const TOPICS = [
   {
     id: "mmr-vaccine-autism",
     claim: "The MMR vaccine causes autism",
+    aliases: ["vaccines cause autism", "vaccine autism", "measles vaccine autism", "mmr shot"],
     verdict: "contradicts",
     short: "Large studies covering hundreds of thousands of children find no link.",
     explanation:
@@ -187,6 +213,7 @@ export const TOPICS = [
   {
     id: "antibiotics-cold-flu",
     claim: "Antibiotics can treat colds and the flu",
+    aliases: ["antibiotics for a virus", "z-pack for a cold", "amoxicillin for the flu", "antibiotics for a cold"],
     verdict: "contradicts",
     short: "No — antibiotics don't work on viruses.",
     explanation:
@@ -201,6 +228,7 @@ export const TOPICS = [
   {
     id: "sugar-hyperactivity",
     claim: "Sugar causes hyperactivity in children",
+    aliases: ["sugar rush", "sugar high in kids", "sugar and adhd", "candy makes kids hyper"],
     verdict: "contradicts",
     short: "No — at least 12 controlled trials found no link.",
     explanation:
@@ -215,6 +243,7 @@ export const TOPICS = [
   {
     id: "knuckle-cracking-arthritis",
     claim: "Cracking your knuckles causes arthritis",
+    aliases: ["cracking your knuckles", "popping knuckles", "cracking joints causes arthritis"],
     verdict: "contradicts",
     short: "Studies comparing crackers to non-crackers find no difference.",
     explanation:
@@ -229,6 +258,7 @@ export const TOPICS = [
   {
     id: "natural-products-safer",
     claim: "Herbal or 'natural' products are automatically safer than medicines",
+    aliases: ["natural remedies are safe", "herbal supplements are safe", "essential oils are safe", "chemical free", "natural vs medicine"],
     verdict: "contradicts",
     short: "'Natural' isn't a safety guarantee.",
     explanation:
@@ -242,6 +272,7 @@ export const TOPICS = [
   {
     id: "acne-dirty-skin",
     claim: "Acne is caused by dirty skin, so washing more will clear it",
+    aliases: ["washing your face clears acne", "pimples from dirt", "acne hygiene", "breakouts"],
     verdict: "contradicts",
     short: "Acne comes from clogged pores and bacteria, not dirt.",
     explanation:
@@ -255,6 +286,7 @@ export const TOPICS = [
   {
     id: "blue-light-eye-damage",
     claim: "Blue light from your phone permanently damages your eyes",
+    aliases: ["screen time hurts your eyes", "phones ruin eyesight", "blue light glasses", "screens make you go blind"],
     verdict: "contradicts",
     short: "No evidence of permanent damage from normal screen use.",
     explanation:
@@ -268,6 +300,7 @@ export const TOPICS = [
   {
     id: "cold-weather-catching-cold",
     claim: "Cold weather directly causes you to catch a cold",
+    aliases: ["going outside with wet hair makes you sick", "wet hair cold", "cold weather makes you sick", "catching a cold from being cold", "winter colds"],
     verdict: "contradicts",
     short: "No — colds are caused by viruses, not temperature.",
     explanation:

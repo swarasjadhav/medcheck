@@ -20,8 +20,13 @@ We were inspired by how often we saw health claims online that sounded convincin
 
 - **Feed:** one claim at a time, with a short answer and an evidence meter.
 - **Evidence page:** a plain-language explanation, its limitations, what new evidence would change the conclusion, and the real sources (publisher, year, link).
-- **Fact Check:** search all 20 reviewed topics. If a claim has not been reviewed, the app says so instead of guessing, and links to a PubMed search.
-- **Quiz:** six myth-or-fact questions. After each answer, one tap opens the full evidence for that topic.
+- **Fact Check:** search all 20 reviewed topics, even when people word a claim differently ("does wet hair give you a cold?"). If a claim has not been reviewed, the app says so instead of guessing, shows the closest claims, gives four questions for checking it yourself, and links to a PubMed search.
+- **Quiz:** "How strong is the evidence?" for six random claims, one from each rating. After each answer, one tap opens the full evidence for that topic.
+- **Shareable links:** every claim has its own address (like `/claim/vitamin-c-colds`) and a Share button, and links show a preview in messages and social apps.
+- **Saved claims:** tap Save on any claim. Saves stay on the device, or sync to an optional account.
+- **Account (optional):** email and password sign-in, password reset, and in-app account deletion.
+- **How we rate evidence:** a page explaining the four ratings and how claims are reviewed.
+- **Works offline** on the website, and is built to be wrapped as iPhone and Android apps with Capacitor.
 - **Safety caution:** topics with a possible safety concern, such as mouth taping, show a warning.
 - **Education only:** every evidence page says MedCheck is not medical advice.
 
@@ -40,17 +45,22 @@ We were inspired by how often we saw health claims online that sounded convincin
 - [React](https://react.dev) 18 and [Vite](https://vitejs.dev) 5
 - [lucide-react](https://lucide.dev) for icons
 - Google Fonts: Source Serif 4 and Inter
+- [Supabase](https://supabase.com) for optional accounts and saved claims
+- [Vercel](https://vercel.com) for hosting and one server function (`api/delete-account.js`)
 
-These are open-source tools (React and Vite are MIT licensed, lucide-react is ISC, and both fonts use the SIL Open Font License). MedCheck has no backend, no accounts, and collects no user data. All content lives in one file, `src/topics-data.js`.
+These are open-source tools (React and Vite are MIT licensed, lucide-react is ISC, supabase-js is MIT, and both fonts use the SIL Open Font License). All claim content lives in one file, `src/topics-data.js`. The only personal data MedCheck stores is an account's email address and the list of claims it saved; see the privacy policy in `website/privacy.html`.
 
 ## Run it on your computer
 
-You need [Node.js](https://nodejs.org) 18 or newer.
+You need [Node.js](https://nodejs.org) 22 or newer.
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the Supabase values (optional)
 npm run dev
 ```
+
+Without the Supabase values the app still runs: sign-in is hidden and saved claims stay on the device. Setup steps for Supabase, the website and the app stores are in our build and launch guide.
 
 Then open the address it prints, usually http://localhost:5173.
 
@@ -60,13 +70,21 @@ To make a production build: `npm run build`.
 
 ```
 src/
-  App.jsx          App shell: Feed, Fact Check, evidence page, evidence meter
-  QuizScreen.jsx   Myth-or-fact quiz, linked to the topics
-  topics-data.js   All 20 topics, ratings, and sources
-  main.jsx         Entry point
-  index.css        Base styles
-public/            App icons and manifest
-index.html         Page shell and fonts
+  App.jsx               App shell: header, tab bar, moving between screens
+  screens/              One file per screen: Feed, Fact Check, Claim, Quiz,
+                        Saved, Account, How we rate evidence
+  ui.jsx                Shared pieces: evidence meter, Save and Share buttons, colors
+  topics-data.js        All 20 topics, ratings, search phrases and sources
+  evidence-levels.js    The four ratings: labels, colors, definitions
+  routes.js             Web addresses for each screen and claim
+  config.js             Settings read from .env.local / Vercel
+  lib/                  Accounts (useAuth), saved claims, search, Supabase client
+  main.jsx, index.css   Entry point and base styles
+api/delete-account.js   Server function that deletes an account (needs the Supabase secret key)
+supabase/schema.sql     Database table and security rules, run once in Supabase
+scripts/                Build step that writes a link-preview page for each claim
+public/                 App icons, manifest, offline service worker
+website/                The MedCheck website: home, privacy, terms, support, delete account
 ```
 
 Every topic is one object in `src/topics-data.js`:
@@ -85,7 +103,7 @@ Every topic is one object in `src/topics-data.js`:
 }
 ```
 
-The Feed, Fact Check, and Quiz all read from this one file, so adding a topic means adding one object. `EVIDENCE_LEVELS` in `App.jsx` turns each `verdict` into a label, a color, and a number of bars. Each quiz question stores a `relatedTopicId`, and `topics.find()` looks up the full topic so the quiz can open its sources.
+Each topic can also have `aliases` (other ways people search for it), `reviewedOn` (the date of its last full review) and a `type` on each source (such as "Meta-analysis"). The Feed, Fact Check, Quiz and Saved screens all read from this one file, so adding a topic means adding one object. `EVIDENCE_LEVELS` in `src/evidence-levels.js` turns each `verdict` into a label, a color, and a number of bars. The build checks every topic's `id` and `verdict` and stops if one is missing or repeated.
 
 ## How we use AI (full disclosure)
 
@@ -98,6 +116,7 @@ The Feed, Fact Check, and Quiz all read from this one file, so adding a topic me
 - Planning the app, such as the React components, styling, and bug fixes. We run it, test it, and can explain how it works.
 - Making the app icon artwork.
 - Building a verification script that uses the PubMed API and Claude to ask whether a source supports an explanation. We built it but have **not** run it on our final topics, so all of our checking was done by hand.
+- Writing version 2 code (shareable links, accounts, saved claims, search, the new quiz and the website) in pull requests that our team reviewed and tested before merging.
 
 The finished app does not use AI while it runs. It contains no AI calls, only the text we published.
 

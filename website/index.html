@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MedCheck: check the evidence behind health claims</title>
+    <meta
+      name="description"
+      content="MedCheck is a free app that shows how strong the scientific evidence is behind health claims you see online, in plain language, with real sources."
+    />
+    <meta name="theme-color" content="#1A2E35" />
+    <meta property="og:title" content="MedCheck: check the evidence behind health claims" />
+    <meta
+      property="og:description"
+      content="A free app that shows how strong the evidence is behind health claims, with real sources."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icon-512.png" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/"><img src="/icon.svg" alt="" />MedCheck</a>
+        <nav class="site-nav" aria-label="Main">
+          <a href="#how">How it works</a>
+          <a href="#ratings">Ratings</a>
+          <a href="#about">About</a>
+          <a href="/support">Help</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="wrap">
+          <p class="eyebrow">Free · No ads · Built by students</p>
+          <h1>Check the evidence before you share it.</h1>
+          <p>
+            MedCheck shows how strong the science is behind the health claims you see on TikTok, Instagram and
+            group chats. Every rating explains what was studied, what's still unknown, and links to the real
+            sources.
+          </p>
+          <div class="buttons">
+            <!-- APP_URL: change this link if the app moves to a new address. -->
+            <a class="button primary" href="https://medcheck-steel.vercel.app">Open MedCheck</a>
+            <a class="button secondary" href="#get">Get the app</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="wrap">
+          <h2>How it works</h2>
+          <p class="lead">Search a claim the way you'd say it out loud. MedCheck finds the closest checked claim.</p>
+          <div class="grid">
+            <div class="card">
+              <h3>1. Search</h3>
+              <p>Type something like "does wet hair give you a cold" or browse the claims going around right now.</p>
+            </div>
+            <div class="card">
+              <h3>2. See the rating</h3>
+              <p>A four-level meter shows how strong the evidence is, with a one-line answer in plain language.</p>
+            </div>
+            <div class="card">
+              <h3>3. Read the sources</h3>
+              <p>Each claim links to the studies and reviews it's based on, plus what would change the rating.</p>
+            </div>
+            <div class="card">
+              <h3>4. Save and share</h3>
+              <p>Save claims to come back to, and share a link so friends see the evidence too.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="alt">
+        <div class="wrap example">
+          <div>
+            <h2>What a check looks like</h2>
+            <p class="lead">
+              We don't say "true" or "false." Health science is messier than that, so we rate how strong the
+              evidence is and say why.
+            </p>
+            <a class="button dark" href="https://medcheck-steel.vercel.app/claim/vitamin-c-colds">See this claim in the app</a>
+          </div>
+          <div class="claim-card">
+            <div class="meter limited" role="img" aria-label="Evidence level: limited">
+              <span class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+              Limited evidence
+            </div>
+            <h3>Vitamin C prevents the common cold</h3>
+            <p>It doesn't prevent colds for most people, but may modestly shorten them.</p>
+            <p>Source: Cochrane systematic review</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ratings">
+        <div class="wrap">
+          <h2>The four ratings</h2>
+          <p class="lead">Every claim gets one of these, based on the kind and amount of research behind it.</p>
+          <div class="grid">
+            <div class="card">
+              <div class="meter strong">
+                <span class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                Strong evidence
+              </div>
+              <p>A systematic review of randomized trials, or several large trials, found consistent results that support the claim.</p>
+            </div>
+            <div class="card">
+              <div class="meter limited">
+                <span class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                Limited evidence
+              </div>
+              <p>Some good evidence, but the effect is small, applies only to some people, or comes mostly from observational studies.</p>
+            </div>
+            <div class="card">
+              <div class="meter unclear">
+                <span class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                Unclear / mixed
+              </div>
+              <p>Few studies, conflicting results, or low-quality studies, so we can't say either way yet.</p>
+            </div>
+            <div class="card">
+              <div class="meter contradicts">
+                <span class="bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                Contradicts claim
+              </div>
+              <p>Good-quality studies show the claim is false.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="get" class="alt">
+        <div class="wrap measure">
+          <h2>Get the app</h2>
+          <p class="lead">MedCheck works in any browser today. Phone apps are on the way.</p>
+          <ul>
+            <li><strong>Web:</strong> <a href="https://medcheck-steel.vercel.app">medcheck-steel.vercel.app</a>. On a phone, use "Add to Home Screen" to keep it like an app.</li>
+            <!-- When the store listings are live, replace "Coming soon" with the store links. -->
+            <li><strong>iPhone (App Store):</strong> Coming soon</li>
+            <li><strong>Android (Google Play):</strong> Coming soon</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="about">
+        <div class="wrap measure">
+          <h2>About MedCheck</h2>
+          <p>
+            MedCheck was started by high school students and won first place in our district in the Congressional
+            App Challenge. We built it because health misinformation spreads fast, and checking it usually means
+            reading studies most people never see.
+          </p>
+          <p>
+            We start from strong sources like Cochrane reviews, the CDC, the WHO and major medical journals, and we check every rating against its sources by hand before it's published. MedCheck
+            is for learning, not medical advice. For your own health, talk to a doctor, nurse or pharmacist.
+          </p>
+          <p>
+            Want to suggest a claim, report a mistake, or work with us? Visit <a href="/support">Help and contact</a>.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <nav aria-label="Footer">
+          <a href="/privacy">Privacy policy</a>
+          <a href="/terms">Terms of use</a>
+          <a href="/support">Help and contact</a>
+          <a href="/delete-account">Delete your account</a>
+        </nav>
+        <p>MedCheck is for education only and is not medical advice.</p>
+        <p>© 2026 MedCheck</p>
+      </div>
+    </footer>
+  </body>
+</html>
